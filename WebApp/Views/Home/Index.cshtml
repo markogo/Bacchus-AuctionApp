@@ -1,0 +1,114 @@
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to Bacchus!</h1>
+    <h3>The #1 auction site in the world</h3>
+    <hr/>
+    @if (TempData["successful"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["successful"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["unsuccessful"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["unsuccessful"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+</div>
+<div class="text-center">
+    <a asp-controller="UserBids" asp-action="Index" class="btn btn-dark">View completed auctions</a>
+</div>
+<br/>
+<h4 class="text-center">Items currently in auction </h4>
+<br/>
+
+<div class="dropdown text-center">
+    <button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Filter by category
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        @foreach (var category in Model.Categories)
+        {
+            <a asp-controller="Home" asp-action="Index" asp-route-categoryName="@category.CategoryName" class="dropdown-item"><b>@category.CategoryName</b></a>
+            @foreach (var product in category.Products)
+            {
+                <a class="dropdown-item disabled" href="#">@product</a>
+            }
+            <div class="dropdown-divider"></div>
+        }
+    </div>
+    
+    @if (Model.ShowResetFilterBtn)
+    {
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Reset filter</a>
+    }
+    
+</div>
+
+<br/>
+
+<div asp-validation-summary="ModelOnly" class="text-danger text-center"></div>
+
+<div class="card-deck" style="flex-direction: column !important;">
+    <div class="row">
+        @foreach (var item in Model.Products) {
+            <div class="col-sm-6 mb-4">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h4>@Html.DisplayFor(modelItem => item.ProductName)</h4>
+                    </div>
+                    <div class="card-body text-center">
+                        <p class="card-title">@Html.DisplayFor(modelItem => item.ProductDescription)</p>
+                        <b class="card-text">Time left: @Html.DisplayFor(modelItem => item.TimeLeft)</b>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a class="btn btn-primary" data-toggle="collapse" href="@("#collapseBid" + item.ProductId)" role="button">Bid</a>
+                    </div>
+                    <div class="collapse card-footer" id="@("collapseBid" + item.ProductId)">
+                        <div class="card card-body" style="background: floralwhite">
+                            <div class="row">
+                                <div class="col">
+                                    <form asp-action="SubmitBid">
+                                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                        <div class="form-group">
+                                            <label asp-for="Bid.FullName" class="control-label"></label>
+                                            <input asp-for="Bid.FullName" class="form-control"/>
+                                            <span asp-validation-for="Bid.FullName" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label asp-for="Bid.Amount" class="control-label"></label>
+                                            <input asp-for="Bid.Amount" class="form-control">
+                                            <span asp-validation-for="Bid.Amount" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <input asp-for="Bid.ProductId" value=@(item.ProductId) type="hidden"/>
+                                        </div>
+                                        <div class="form-group text-center">
+                                            <input type="submit" value="Submit" class="btn btn-success" />
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
